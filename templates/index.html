@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lexindex - English Turkish Dictionary & Quiz System</title>
+    
+    <style>
+        /* Color Palette - Same as Desktop App */
+        :root {
+            --color-bg: #2A2A2A;
+            --color-card: #3A3A3A;
+            --color-highlight: #464646;
+            --color-border: #202020;
+            --color-text: #E5E5E5;
+            --color-text-dark: #323232;
+            --color-button-text: #74D1EA;
+            --color-section-headers: #FFAA4D;
+            --color-subsection-headers: #AFEADC;
+            --color-lexindex-title: #00AAFF;
+            --color-field-headers: #A9EE8A;
+            
+            --color-word-text: #FD894F;
+            --color-pos-text: #8BFF68;
+            --color-pronunciation-text: #F885FF;
+            --color-turkish-text: #FF5D5D;
+            --color-main-definition-text: #5FCAFF;
+            
+            --color-etymology-box: #FFB609;
+            --color-examples-box: #DFBCFE;
+            --color-definitions-box: #5FCAFF;
+            --color-synonyms-box: #8BFF68;
+            --color-antonyms-box: #FF5D5D;
+            
+            --color-favorites-btn: #F885FF;
+            --color-search-btn: #8BFF68;
+            --color-refresh-btn: #5FCAFF;
+            --color-random-quiz-btn: #F885FF;
+            --color-next-question-btn: #FD894F;
+            --color-show-explanation-btn: #8BFF68;
+            --color-add-favorites-btn: #FFB609;
+            --color-pronunciation-btn: #5FCAFF;
+            --color-clear-all-btn: #FF5D5D;
+            --color-close-btn: #F885FF;
+            
+            --color-correct-answer: #8BFF68;
+            --color-wrong-answer: #FF5D5D;
+            --color-answer-text: #323232;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.4;
+            min-height: 100vh;
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 15px;
+            min-height: 100vh;
+        }
+        
+        .left-panel, .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .card {
+            background: var(--color-card);
+            border-radius: 8px;
+            border: 1px solid var(--color-border);
+        }
+        
+        .card-header {
+            background: transparent;
+            padding: 15px;
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--color-section-headers);
+        }
+        
+        .lexindex-title {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--color-lexindex-title);
+            text-align: center;
+            margin: 0;
+        }
+        
+        .subtitle {
+            font-size: 13px;
+            color: var(--color-text);
+            text-align: center;
+            margin: 5px 0;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        
+        .btn-favorites { background: var(--color-favorites-btn); color: var(--color-text-dark); }
+        .btn-search { background: var(--color-search-btn); color: var(--color-text-dark); width: 100%; height: 40px; font-size: 18px; }
+        .btn-refresh { background: var(--color-refresh-btn); color: var(--color-text-dark); }
+        .btn-quiz { background: var(--color-random-quiz-btn); color: var(--color-text-dark); }
+        .btn-next { background: var(--color-next-question-btn); color: var(--color-text-dark); }
+        .btn-explain { background: var(--color-show-explanation-btn); color: var(--color-text-dark); }
+        .btn-add-fav { background: var(--color-add-favorites-btn); color: var(--color-text-dark); }
+        .btn-pronunciation { background: var(--color-pronunciation-btn); color: var(--color-text-dark); }
+        .btn-clear { background: var(--color-clear-all-btn); color: var(--color-text-dark); }
+        .btn-close { background: var(--color-close-btn); color: var(--color-text-dark); }
+        
+        .search-input {
+            width: 100%;
+            height: 40px;
+            padding: 0 15px;
+            background: var(--color-card);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            color: var(--color-text);
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--color-search-btn);
+        }
+        
+        .word-overview-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            padding: 15px;
+        }
+        
+        .word-overview-full {
+            grid-column: 1 / -1;
+        }
+        
+        .info-box {
+            background: var(--color-highlight);
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        .field-header {
+            font-size: 15px;
+            font-weight: bold;
+            color: var(--color-field-headers);
+            margin-bottom: 5px;
+        }
+        
+        .word-text { color: var(--color-word-text); font-size: 19px; font-weight: bold; }
+        .pos-text { color: var(--color-pos-text); font-size: 19px; font-weight: bold; }
+        .pronunciation-text { color: var(--color-pronunciation-text); font-size: 17px; }
+        .turkish-text { color: var(--color-turkish-text); font-size: 17px; }
+        .definition-text { color: var(--color-main-definition-text); font-size: 16px; text-align: left; }
+        
+        .random-words-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            padding: 15px;
+        }
+        
+        .word-card {
+            background: var(--color-highlight);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            padding: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .word-card:hover {
+            background: #606060;
+            color: #FFFFFF;
+        }
+        
+        .word-card-text {
+            font-size: 13px;
+            font-weight: bold;
+            color: #E5E5E5;
+        }
+        
+        .quiz-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .quiz-content {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+        }
+        
+        .quiz-question {
+            background: var(--color-highlight);
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+        
+        .quiz-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .quiz-option {
+            background: transparent;
+            border: 1px solid var(--color-border);
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        
+        .quiz-option:hover {
+            background: var(--color-highlight);
+        }
+        
+        .quiz-option.correct {
+            background: var(--color-correct-answer);
+            color: var(--color-text-dark);
+            font-weight: bold;
+        }
+        
+        .quiz-option.wrong {
+            background: var(--color-wrong-answer);
+            color: var(--color-text-dark);
+            font-weight: bold;
+        }
+        
+        .quiz-option.disabled {
+            background: #505050;
+            cursor: not-allowed;
+        }
+        
+        .quiz-status {
+            background: var(--color-highlight);
+            padding: 10px 15px;
+            font-size: 12px;
+            border-radius: 0 0 8px 8px;
+        }
+        
+        .quiz-buttons {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            gap: 10px;
+        }
+        
+        .details-section {
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .details-content {
+            padding: 15px;
+        }
+        
+        .detail-header {
+            background: var(--color-definitions-box);
+            color: var(--color-text-dark);
+            padding: 8px 20px;
+            font-weight: bold;
+            font-size: 16px;
+            border-radius: 4px;
+            margin: 10px 0 5px 0;
+            display: inline-block;
+        }
+        
+        .detail-header.etymology { background: var(--color-etymology-box); }
+        .detail-header.examples { background: var(--color-examples-box); }
+        .detail-header.synonyms { background: var(--color-synonyms-box); }
+        .detail-header.antonyms { background: var(--color-antonyms-box); }
+        
+        .detail-content {
+            background: var(--color-highlight);
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+        
+        .definition-item {
+            background: var(--color-card);
+            padding: 8px;
+            margin: 4px 0;
+            border-radius: 4px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 30px;
+            color: var(--color-text);
+        }
+        
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: transparent;
+        }
+        
+        .api-status {
+            font-size: 16px;
+            color: var(--color-text);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+        
+        .modal-content {
+            background-color: var(--color-bg);
+            margin: 5% auto;
+            padding: 0;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            width: 80%;
+            max-width: 700px;
+            max-height: 80%;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            background: transparent;
+            padding: 20px;
+            border-bottom: 1px solid var(--color-border);
+            text-align: center;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .modal-footer {
+            padding: 15px;
+            text-align: center;
+            border-top: 1px solid var(--color-border);
+        }
+        
+        .favorites-item {
+            background: var(--color-highlight);
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 6px;
+        }
+        
+        .favorites-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .favorites-word {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--color-lexindex-title);
+        }
+        
+        .favorites-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .favorites-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 13px;
+        }
+        
+        .favorites-definition {
+            grid-column: 1 / -1;
+            margin-top: 5px;
+            font-size: 13px;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .word-overview-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .quiz-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .random-words-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Copy hint */
+        .copy-hint {
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .copy-hint:hover {
+            opacity: 0.8;
+        }
+        
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--color-bg);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--color-highlight);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #606060;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left Panel -->
+        <div class="left-panel">
+            <!-- Header Section -->
+            <div class="card">
+                <div class="status-bar">
+                    <button class="btn btn-favorites" onclick="openFavorites()">Favorites</button>
+                    <div class="api-status" id="apiStatus">Ready</div>
+                </div>
+                <div style="padding: 20px; text-align: center;">
+                    <h1 class="lexindex-title">Lexindex</h1>
+                    <p class="subtitle">Vocabulary Companion - Powered by Merriam-Webster</p>
+                    <p class="subtitle">Double-click any text to copy to clipboard</p>
+                    <p class="subtitle" style="font-size: 11px;">You can open Favorites and Explanation windows simultaneously</p>
+                </div>
+            </div>
+            
+            <!-- Search Section -->
+            <div class="card">
+                <div style="padding: 15px;">
+                    <input type="text" id="searchInput" class="search-input" placeholder="Enter English word..." 
+                           onkeypress="if(event.key==='Enter') searchWord()">
+                    <button class="btn btn-search" onclick="searchWord()" id="searchBtn">SEARCH</button>
+                </div>
+            </div>
+            
+            <!-- Random Words Section -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="section-title">RANDOM WORDS:</span>
+                    <button class="btn btn-refresh" onclick="loadRandomWords()">REFRESH</button>
+                </div>
+                <div class="random-words-grid" id="randomWordsGrid">
+                    <div class="loading">Loading random words...</div>
+                </div>
+            </div>
+            
+            <!-- Quiz Section -->
+            <div class="card quiz-section">
+                <div class="card-header">
+                    <span class="section-title">QUIZ CHALLENGE:</span>
+                    <button class="btn btn-quiz" onclick="loadRandomQuiz()">RANDOM QUIZ</button>
+                </div>
+                <div class="quiz-content" id="quizContent">
+                    <div class="loading">Loading quiz...</div>
+                </div>
+                <div class="quiz-status" id="quizStatus">Quiz loading...</div>
+                <div class="quiz-buttons">
+                    <button class="btn btn-explain" onclick="showExplanation()" id="explainBtn" disabled>SHOW EXPLANATION</button>
+                    <button class="btn btn-next" onclick="loadRandomQuiz()" id="nextQuestionBtn">NEXT QUESTION</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Panel -->
+        <div class="right-panel">
+            <!-- Word Overview Section -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="section-title">WORD OVERVIEW:</span>
+                    <div class="action-buttons">
+                        <button class="btn btn-add-fav" onclick="toggleFavorite()" id="favBtn">Add to Favorites</button>
+                        <button class="btn btn-pronunciation" onclick="playPronunciation()" id="pronunciationBtn">Pronunciation</button>
+                    </div>
+                </div>
+                <div class="word-overview-grid">
+                    <div class="info-box">
+                        <div class="field-header">WORD:</div>
+                        <div class="word-text copy-hint" id="wordText" onclick="copyToClipboard(this.textContent, 'Word')">HELLO</div>
+                    </div>
+                    <div class="info-box">
+                        <div class="field-header">PART OF SPEECH:</div>
+                        <div class="pos-text copy-hint" id="posText" onclick="copyToClipboard(this.textContent, 'Part of Speech')">EXCLAMATION</div>
+                    </div>
+                    <div class="info-box">
+                        <div class="field-header">PRONUNCIATION:</div>
+                        <div class="pronunciation-text copy-hint" id="pronunciationText" onclick="copyToClipboard(this.textContent, 'Pronunciation')">/həˈloʊ/</div>
+                    </div>
+                    <div class="info-box">
+                        <div class="field-header">TURKISH:</div>
+                        <div class="turkish-text copy-hint" id="turkishText" onclick="copyToClipboard(this.textContent, 'Turkish translation')">Merhaba</div>
+                    </div>
+                    <div class="info-box word-overview-full">
+                        <div class="field-header">MAIN DEFINITION:</div>
+                        <div class="definition-text copy-hint" id="definitionText" onclick="copyToClipboard(this.textContent, 'Main definition')">Used as a greeting</div>
+                    </div>
+                    <div class="info-box word-overview-full">
+                        <div class="field-header">EXAMPLE:</div>
+                        <div class="definition-text copy-hint" id="exampleText" onclick="copyToClipboard(this.textContent, 'Example')">"Hello, how are you today?"</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Dictionary Details Section -->
+            <div class="card details-section">
+                <div class="card-header">
+                    <span class="section-title">DICTIONARY DETAILS</span>
+                </div>
+                <div class="details-content" id="dictionaryDetails">
+                    <div class="loading">Search for a word to see<br>detailed dictionary information here</div>
+                </div>
+            </div>
+            
+            <!-- Thesaurus Details Section -->
+            <div class="card details-section">
+                <div class="card-header">
+                    <span class="section-title">THESAURUS DETAILS</span>
+                </div>
+                <div class="details-content" id="thesaurusDetails">
+                    <div class="loading">Search for a word to see<br>thesaurus details here</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Favorites Modal -->
+    <div id="favoritesModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 style="color: var(--color-section-headers); margin: 0;">YOUR FAVORITE WORDS</h2>
+                <div style="margin-top: 10px;">
+                    <button class="btn btn-clear" onclick="clearAllFavorites()">CLEAR ALL</button>
+                    <button class="btn btn-refresh" onclick="loadFavorites()" style="margin-left: 5px;">REFRESH</button>
+                </div>
+                <p style="margin: 10px 0 0 0; font-size: 13px;">Double-click any text to copy to clipboard</p>
+            </div>
+            <div class="modal-body" id="favoritesContent">
+                <div class="loading">Loading favorites...</div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-close" onclick="closeFavorites()">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Explanation Modal -->
+    <div id="explanationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 style="color: var(--color-section-headers); margin: 0;">QUESTION EXPLANATION</h2>
+            </div>
+            <div class="modal-body" id="explanationContent">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-close" onclick="closeExplanation()">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Global variables
+        let currentWordData = null;
+        let currentQuestion = null;
+        let quizScore = 0;
+        let totalQuestions = 0;
+        let favorites = [];
+        let isQuizAnswered = false;
+        
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDefaultWord();
+            loadRandomWords();
+            loadRandomQuiz();
+            loadFavorites();
+        });
+        
+        // API calls
+        async function searchWord() {
+            const word = document.getElementById('searchInput').value.trim();
+            if (!word) {
+                alert('Please enter a word to search!');
+                return;
+            }
+            
+            const searchBtn = document.getElementById('searchBtn');
+            const apiStatus = document.getElementById('apiStatus');
+            
+            searchBtn.textContent = 'Searching...';
+            searchBtn.disabled = true;
+            apiStatus.textContent = 'Searching...';
+            
+            try {
+                const response = await fetch('/api/search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ word: word })
+                });
+                
+                const result = await response.json();
+                
+                if (result.error) {
+                    handleSearchError(result, word);
+                } else {
+                    currentWordData = result;
+                    displayWord(result);
+                    document.getElementById('searchInput').value = '';
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+                alert('Search failed. Please try again.');
+            } finally {
+                searchBtn.textContent = 'SEARCH';
+                searchBtn.disabled = false;
+                apiStatus.textContent = 'Ready';
+            }
+        }
+        
+        function handleSearchError(result, originalQuery) {
+            if (result.error === 'word_not_found') {
+                let message = `Word '${originalQuery}' not found.`;
+                if (result.suggestions) {
+                    message += `\n\nDid you mean:\n${result.suggestions.join('\n')}`;
+                }
+                alert(message);
+            } else {
+                alert(`Search failed for '${originalQuery}'. Please try again.`);
+            }
+        }
+        
+        async function loadDefaultWord() {
+            try {
+                const response = await fetch('/api/search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ word: 'hello' })
+                });
+                
+                const result = await response.json();
+                
+                if (!result.error) {
+                    currentWordData = result;
+                    displayWord(result);
+                }
+            } catch (error) {
+                console.error('Default word load error:', error);
+                // Keep default placeholder values
+            }
+        }
+        
+        async function loadRandomWords() {
+            try {
+                const response = await fetch('/api/random-words');
+                const words = await response.json();
+                
+                const grid = document.getElementById('randomWordsGrid');
+                
+                if (words.length === 0) {
+                    grid.innerHTML = '<div class="loading" style="grid-column: 1 / -1;">Add Excel files to /database/ folder<br>with \'Word\' column<br>to see random words</div>';
+                    return;
+                }
+                
+                grid.innerHTML = '';
+                words.forEach(wordData => {
+                    const card = document.createElement('div');
+                    card.className = 'word-card';
+                    card.innerHTML = `<div class="word-card-text">${wordData.Word.toUpperCase()}</div>`;
+                    card.onclick = () => loadWordFromCard(wordData.Word);
+                    card.ondblclick = () => copyToClipboard(wordData.Word, 'Word');
+                    grid.appendChild(card);
+                });
+            } catch (error) {
+                console.error('Random words load error:', error);
+            }
+        }
+        
+        async function loadWordFromCard(word) {
+            // Show loading state
+            updateWordDisplay({
+                Word: word.toUpperCase(),
+                Part_of_Speech: 'LOADING...',
+                Main_Definition: 'Loading definition...',
+                Main_Example: 'Loading example...',
+                Pronunciation: 'Loading...',
+                Turkish_Translation: 'Loading...'
+            });
+            
+            clearDetailsDisplay();
+            
+            try {
+                const response = await fetch('/api/search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ word: word })
+                });
+                
+                const result = await response.json();
+                
+                if (!result.error) {
+                    currentWordData = result;
+                    displayWord(result);
+                } else {
+                    handleCardLoadError(word);
+                }
+            } catch (error) {
+                console.error('Card word load error:', error);
+                handleCardLoadError(word);
+            }
+        }
+        
+        function handleCardLoadError(word) {
+            updateWordDisplay({
+                Word: word.toUpperCase(),
+                Part_of_Speech: 'ERROR',
+                Main_Definition: 'Failed to load definition from API',
+                Main_Example: 'No example available',
+                Pronunciation: 'N/A',
+                Turkish_Translation: 'Translation unavailable'
+            });
+            
+            document.getElementById('dictionaryDetails').innerHTML = '<div class="loading">Failed to load dictionary details<br>Please check your internet connection</div>';
+            document.getElementById('thesaurusDetails').innerHTML = '<div class="loading">Failed to load thesaurus details<br>Please check your internet connection</div>';
+        }
+        
+        async function loadRandomQuiz() {
+            isQuizAnswered = false;
+            document.getElementById('explainBtn').disabled = false;
+            
+            try {
+                const response = await fetch('/api/quiz/random');
+                const question = await response.json();
+                
+                if (question.error) {
+                    document.getElementById('quizContent').innerHTML = '<div class="loading">Add Excel files to /database/ folder<br>with \'Question\' column<br>to see quiz questions</div>';
+                    document.getElementById('quizStatus').textContent = 'No quiz database - Add Excel files with \'QUESTION\' column to /database/';
+                    document.getElementById('explainBtn').disabled = true;
+                    return;
+                }
+                
+                currentQuestion = question;
+                displayQuiz(question);
+            } catch (error) {
+                console.error('Quiz load error:', error);
+                document.getElementById('quizContent').innerHTML = '<div class="loading">Failed to load quiz</div>';
+            }
+        }
+        
+        // Display functions
+        function displayWord(wordData) {
+            updateWordDisplay(wordData);
+            updateDictionaryDetails(wordData.Dictionary_Data || []);
+            updateThesaurusDetails(wordData.Thesaurus_Data || []);
+            updateFavoriteButton();
+        }
+        
+        function updateWordDisplay(wordData) {
+            document.getElementById('wordText').textContent = wordData.Word.toUpperCase();
+            document.getElementById('posText').textContent = (wordData.Part_of_Speech || '').toUpperCase();
+            document.getElementById('pronunciationText').textContent = wordData.Pronunciation || 'N/A';
+            document.getElementById('turkishText').textContent = wordData.Turkish_Translation || '';
+            document.getElementById('definitionText').textContent = wordData.Main_Definition || '';
+            
+            const example = wordData.Main_Example || 'No example available';
+            document.getElementById('exampleText').textContent = example.startsWith('"') ? example : `"${example}"`;
+        }
+        
+        function clearDetailsDisplay() {
+            document.getElementById('dictionaryDetails').innerHTML = '<div class="loading">Loading dictionary details...</div>';
+            document.getElementById('thesaurusDetails').innerHTML = '<div class="loading">Loading thesaurus details...</div>';
+        }
+        
+        function updateDictionaryDetails(dictData) {
+            const container = document.getElementById('dictionaryDetails');
+            
+            if (!dictData || dictData.length === 0) {
+                container.innerHTML = '<div class="loading">No dictionary data available<br>Search for a word to see detailed information</div>';
+                return;
+            }
+            
+            let html = '';
+            const entry = dictData[0];
+            
+            if (entry.etymology) {
+                html += `
+                    <div class="detail-header etymology">ETYMOLOGY</div>
+                    <div class="detail-content">
+                        <div class="copy-hint" onclick="copyToClipboard('${entry.etymology}', 'Etymology')">${entry.etymology}</div>
+                    </div>
+                `;
+            }
+            
+            if (entry.definitions && entry.definitions.length > 0) {
+                html += `<div class="detail-header">DEFINITIONS</div><div class="detail-content">`;
+                entry.definitions.forEach((def, i) => {
+                    html += `
+                        <div class="definition-item copy-hint" onclick="copyToClipboard('${def}', 'Definition')">
+                            ${i + 1}. ${def}
+                        </div>
+                    `;
+                });
+                
+                const allDefs = entry.definitions.map((def, i) => `${i + 1}. ${def}`).join('\n');
+                html += `
+                    <div style="background: #4A4A4A; padding: 8px; margin-top: 8px; border-radius: 4px; text-align: center;">
+                        <div class="copy-hint" onclick="copyToClipboard('${allDefs}', 'All definitions')" style="font-weight: bold; font-size: 12px;">
+                            Double-click to copy all definitions
+                        </div>
+                    </div>
+                </div>`;
+            }
+            
+            if (entry.examples && entry.examples.length > 0) {
+                html += `<div class="detail-header examples">EXAMPLES</div><div class="detail-content">`;
+                entry.examples.forEach(example => {
+                    html += `
+                        <div class="definition-item copy-hint" onclick="copyToClipboard('${example}', 'Example')" style="background: #5A5A5A; font-style: italic;">
+                            "${example}"
+                        </div>
+                    `;
+                });
+                
+                const allExamples = entry.examples.map(ex => `"${ex}"`).join('\n');
+                html += `
+                    <div style="background: #4A4A4A; padding: 8px; margin-top: 8px; border-radius: 4px; text-align: center;">
+                        <div class="copy-hint" onclick="copyToClipboard('${allExamples}', 'All examples')" style="font-weight: bold; font-size: 12px;">
+                            Double-click to copy all examples
+                        </div>
+                    </div>
+                </div>`;
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        function updateThesaurusDetails(thesData) {
+            const container = document.getElementById('thesaurusDetails');
+            
+            if (!thesData || thesData.length === 0) {
+                container.innerHTML = '<div class="loading">No thesaurus data available<br>Search for a word to see synonyms and antonyms</div>';
+                return;
+            }
+            
+            let html = '';
+            const entry = thesData[0];
+            
+            if (entry.synonyms && entry.synonyms.length > 0) {
+                const synonymsText = entry.synonyms.join(', ');
+                html += `
+                    <div class="detail-header synonyms">SYNONYMS</div>
+                    <div class="detail-content">
+                        <div class="copy-hint" onclick="copyToClipboard('${synonymsText}', 'Synonyms')">${synonymsText}</div>
+                    </div>
+                `;
+            }
+            
+            if (entry.antonyms && entry.antonyms.length > 0) {
+                const antonymsText = entry.antonyms.join(', ');
+                html += `
+                    <div class="detail-header antonyms">ANTONYMS</div>
+                    <div class="detail-content">
+                        <div class="copy-hint" onclick="copyToClipboard('${antonymsText}', 'Antonyms')">${antonymsText}</div>
+                    </div>
+                `;
+            }
+            
+            if (entry.related_words && entry.related_words.length > 0) {
+                const relatedText = entry.related_words.join(', ');
+                html += `
+                    <div class="detail-header synonyms">RELATED WORDS</div>
+                    <div class="detail-content">
+                        <div class="copy-hint" onclick="copyToClipboard('${relatedText}', 'Related Words')">${relatedText}</div>
+                    </div>
+                `;
+            }
+            
+            if (entry.near_antonyms && entry.near_antonyms.length > 0) {
+                const nearAntonymsText = entry.near_antonyms.join(', ');
+                html += `
+                    <div class="detail-header antonyms">NEAR ANTONYMS</div>
+                    <div class="detail-content">
+                        <div class="copy-hint" onclick="copyToClipboard('${nearAntonymsText}', 'Near Antonyms')">${nearAntonymsText}</div>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        function displayQuiz(question) {
+            const content = document.getElementById('quizContent');
+            
+            let html = `
+                <div class="quiz-question">
+                    <div class="field-header">QUESTION:</div>
+                    <div style="margin-top: 5px; color: var(--color-text);">${question.Question}</div>
+                </div>
+                <div class="quiz-options">
+            `;
+            
+            question.Options.forEach((option, index) => {
+                html += `
+                    <div class="quiz-option" onclick="checkQuizAnswer('${option}', ${index})" id="option${index}">
+                        ${String.fromCharCode(65 + index)}. ${option}
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            content.innerHTML = html;
+            
+            // Update status
+            document.getElementById('quizStatus').textContent = `Manual control | Score: ${quizScore}/${totalQuestions}`;
+        }
+        
+        async function checkQuizAnswer(selectedOption, optionIndex) {
+            if (isQuizAnswered) return;
+            
+            isQuizAnswered = true;
+            
+            try {
+                const response = await fetch('/api/quiz/check', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        selected_option: selectedOption,
+                        correct_answer: currentQuestion.Answer,
+                        options: currentQuestion.Options
+                    })
+                });
+                
+                const result = await response.json();
+                
+                totalQuestions++;
+                if (result.is_correct) {
+                    quizScore++;
+                }
+                
+                // Update UI
+                highlightQuizAnswers(selectedOption, result.correct_answer, result.is_correct);
+                
+                // Search for the correct answer word
+                const searchWord = result.correct_answer.split()[0].toLowerCase().replace(/[.,!?";()[\]{}]/g, '');
+                loadWordFromQuiz(searchWord, result.is_correct, result.correct_answer);
+                
+            } catch (error) {
+                console.error('Quiz check error:', error);
+            }
+        }
+        
+        function highlightQuizAnswers(selectedOption, correctAnswer, isCorrect) {
+            const options = document.querySelectorAll('.quiz-option');
+            
+            options.forEach((option, index) => {
+                const optionText = currentQuestion.Options[index];
+                
+                // Remove click handlers
+                option.onclick = null;
+                option.classList.add('disabled');
+                
+                if (optionText === correctAnswer) {
+                    option.classList.add('correct');
+                    option.innerHTML = `[CORRECT] ${option.innerHTML}`;
+                } else if (optionText === selectedOption && !isCorrect) {
+                    option.classList.add('wrong');
+                    option.innerHTML = `[WRONG] ${option.innerHTML}`;
+                }
+            });
+        }
+        
+        async function loadWordFromQuiz(word, isCorrect, correctAnswer) {
+            const percentage = totalQuestions > 0 ? Math.round((quizScore / totalQuestions) * 100) : 0;
+            const statusText = isCorrect 
+                ? `CORRECT! | Searching '${word}' | Score: ${quizScore}/${totalQuestions} (${percentage}%)`
+                : `WRONG! Answer: ${correctAnswer} | Searching '${word}' | Score: ${quizScore}/${totalQuestions} (${percentage}%)`;
+            
+            document.getElementById('quizStatus').textContent = statusText;
+            
+            // Load the word in the background
+            try {
+                const response = await fetch('/api/search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ word: word })
+                });
+                
+                const result = await response.json();
+                
+                if (!result.error) {
+                    currentWordData = result;
+                    displayWord(result);
+                    
+                    const finalStatus = `'${result.Word}' loaded! | Score: ${quizScore}/${totalQuestions} (${percentage}%) | Click Next to continue`;
+                    document.getElementById('quizStatus').textContent = finalStatus;
+                }
+            } catch (error) {
+                console.error('Quiz word load error:', error);
+            }
+        }
+        
+        // Utility functions
+        function copyToClipboard(text, description) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert(`${description} copied to clipboard!`);
+            }).catch(() => {
+                alert('Failed to copy to clipboard');
+            });
+        }
+        
+        async function playPronunciation() {
+            if (!currentWordData) {
+                alert('No word selected!');
+                return;
+            }
+            
+            const btn = document.getElementById('pronunciationBtn');
+            btn.textContent = 'Loading...';
+            btn.disabled = true;
+            
+            try {
+                // Try to get audio URL from word data
+                const audioFiles = currentWordData.Audio_Files || [];
+                
+                if (audioFiles.length > 0) {
+                    btn.textContent = 'Playing...';
+                    const audio = new Audio(audioFiles[0].url);
+                    
+                    audio.onended = () => {
+                        btn.textContent = 'Pronunciation';
+                        btn.disabled = false;
+                    };
+                    
+                    audio.onerror = () => {
+                        // Fallback to browser TTS
+                        useBrowserTTS();
+                    };
+                    
+                    audio.play();
+                } else {
+                    useBrowserTTS();
+                }
+            } catch (error) {
+                console.error('Pronunciation error:', error);
+                useBrowserTTS();
+            }
+        }
+        
+        function useBrowserTTS() {
+            const btn = document.getElementById('pronunciationBtn');
+            
+            if ('speechSynthesis' in window) {
+                btn.textContent = 'Using TTS...';
+                
+                const utterance = new SpeechSynthesisUtterance(currentWordData.Word);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.8;
+                
+                utterance.onend = () => {
+                    btn.textContent = 'Pronunciation';
+                    btn.disabled = false;
+                };
+                
+                utterance.onerror = () => {
+                    btn.textContent = 'Pronunciation';
+                    btn.disabled = false;
+                    
+                    const pronunciation = currentWordData.Pronunciation || `/${currentWordData.Word}/`;
+                    alert(`Word: ${currentWordData.Word.toUpperCase()}\nPronunciation: ${pronunciation}\n\nNote: Audio playback not available`);
+                };
+                
+                speechSynthesis.speak(utterance);
+            } else {
+                btn.textContent = 'Pronunciation';
+                btn.disabled = false;
+                
+                const pronunciation = currentWordData.Pronunciation || `/${currentWordData.Word}/`;
+                alert(`Word: ${currentWordData.Word.toUpperCase()}\nPronunciation: ${pronunciation}\n\nNote: Audio playback not available`);
+            }
+        }
+        
+        // Favorites functions
+        async function toggleFavorite() {
+            if (!currentWordData) return;
+            
+            const word = currentWordData.Word;
+            const isFavorite = favorites.some(fav => fav.Word.toLowerCase() === word.toLowerCase());
+            
+            if (isFavorite) {
+                // Remove from favorites
+                try {
+                    const response = await fetch(`/api/favorites/${word}`, {
+                        method: 'DELETE'
+                    });
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        favorites = favorites.filter(fav => fav.Word.toLowerCase() !== word.toLowerCase());
+                        updateFavoriteButton();
+                        alert(result.message);
+                    }
+                } catch (error) {
+                    console.error('Remove favorite error:', error);
+                }
+            } else {
+                // Add to favorites
+                try {
+                    const response = await fetch('/api/favorites', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ word_data: currentWordData })
+                    });
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        favorites.push(currentWordData);
+                        updateFavoriteButton();
+                        alert(result.message);
+                    } else {
+                        alert(result.message);
+                    }
+                } catch (error) {
+                    console.error('Add favorite error:', error);
+                }
+            }
+        }
+        
+        function updateFavoriteButton() {
+            if (!currentWordData) return;
+            
+            const word = currentWordData.Word;
+            const isFavorite = favorites.some(fav => fav.Word.toLowerCase() === word.toLowerCase());
+            const btn = document.getElementById('favBtn');
+            
+            btn.textContent = isFavorite ? 'Remove Fav' : 'Add to Favorites';
+        }
+        
+        async function loadFavorites() {
+            try {
+                const response = await fetch('/api/favorites');
+                favorites = await response.json();
+                updateFavoriteButton();
+            } catch (error) {
+                console.error('Load favorites error:', error);
+            }
+        }
+        
+        // Modal functions
+        function openFavorites() {
+            const modal = document.getElementById('favoritesModal');
+            modal.style.display = 'block';
+            displayFavorites();
+        }
+        
+        function closeFavorites() {
+            const modal = document.getElementById('favoritesModal');
+            modal.style.display = 'none';
+        }
+        
+        function displayFavorites() {
+            const content = document.getElementById('favoritesContent');
+            
+            if (favorites.length === 0) {
+                content.innerHTML = '<div class="loading">No favorite words yet.<br>Search for words and add them to favorites!</div>';
+                return;
+            }
+            
+            let html = '';
+            favorites.forEach(wordData => {
+                html += `
+                    <div class="favorites-item">
+                        <div class="favorites-header">
+                            <div class="favorites-word copy-hint" onclick="copyToClipboard('${wordData.Word}', 'Word')">${wordData.Word.toUpperCase()}</div>
+                            <div class="favorites-actions">
+                                <button class="btn" style="background: #2A2A2A; color: var(--color-button-text); font-size: 12px; padding: 4px 8px;" onclick="loadFavoriteWord('${wordData.Word}')">Load</button>
+                                <button class="btn" style="background: #2A2A2A; color: var(--color-button-text); font-size: 12px; padding: 4px 8px; margin-left: 5px;" onclick="removeFavoriteWord('${wordData.Word}')">Remove</button>
+                            </div>
+                        </div>
+                        <div class="favorites-info">
+                            <div class="copy-hint" onclick="copyToClipboard('${wordData.Part_of_Speech || 'N/A'}', 'Part of Speech')">Part of Speech: ${wordData.Part_of_Speech || 'N/A'}</div>
+                            <div class="copy-hint" onclick="copyToClipboard('${wordData.Pronunciation || 'N/A'}', 'Pronunciation')">Pronunciation: ${wordData.Pronunciation || 'N/A'}</div>
+                            <div class="copy-hint" onclick="copyToClipboard('${wordData.Turkish_Translation || 'N/A'}', 'Turkish translation')">Turkish: ${wordData.Turkish_Translation || 'N/A'}</div>
+                        </div>
+                        <div class="favorites-definition">
+                            <div class="copy-hint" onclick="copyToClipboard('${wordData.Main_Definition || 'No definition available'}', 'Definition')">Definition: ${wordData.Main_Definition || 'No definition available'}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            content.innerHTML = html;
+        }
+        
+        function loadFavoriteWord(word) {
+            const wordData = favorites.find(fav => fav.Word.toLowerCase() === word.toLowerCase());
+            if (wordData) {
+                currentWordData = wordData;
+                displayWord(wordData);
+                alert(`Word '${word}' loaded in main window!`);
+            }
+        }
+        
+        async function removeFavoriteWord(word) {
+            if (confirm(`Remove '${word}' from favorites?`)) {
+                try {
+                    const response = await fetch(`/api/favorites/${word}`, {
+                        method: 'DELETE'
+                    });
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        favorites = favorites.filter(fav => fav.Word.toLowerCase() !== word.toLowerCase());
+                        displayFavorites();
+                        updateFavoriteButton();
+                    }
+                } catch (error) {
+                    console.error('Remove favorite error:', error);
+                }
+            }
+        }
+        
+        async function clearAllFavorites() {
+            if (favorites.length === 0) {
+                alert('No favorites to clear!');
+                return;
+            }
+            
+            if (confirm('Are you sure you want to remove ALL favorite words?')) {
+                try {
+                    const response = await fetch('/api/favorites/clear', {
+                        method: 'DELETE'
+                    });
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        favorites = [];
+                        displayFavorites();
+                        updateFavoriteButton();
+                        alert('All favorites have been removed!');
+                    }
+                } catch (error) {
+                    console.error('Clear favorites error:', error);
+                }
+            }
+        }
+        
+        function showExplanation() {
+            if (!currentQuestion) {
+                alert('No quiz question is currently loaded!');
+                return;
+            }
+            
+            const modal = document.getElementById('explanationModal');
+            const content = document.getElementById('explanationContent');
+            
+            const explanation = currentQuestion.Explain || 'No explanation available.';
+            const questionText = currentQuestion.Question || '';
+            
+            // Get correct answer text
+            let correctAnswerRef = currentQuestion.Answer.toUpperCase().trim();
+            let correctOptionText = '';
+            
+            if (correctAnswerRef.startsWith('OPTION')) {
+                try {
+                    const optionNumber = parseInt(correctAnswerRef.replace('OPTION', '')) - 1;
+                    if (optionNumber >= 0 && optionNumber < currentQuestion.Options.length) {
+                        correctOptionText = currentQuestion.Options[optionNumber];
+                    }
+                } catch (e) {
+                    correctOptionText = correctAnswerRef;
+                }
+            } else {
+                correctOptionText = correctAnswerRef;
+            }
+            
+            content.innerHTML = `
+                <div style="background: var(--color-highlight); padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+                    <div class="field-header">QUESTION:</div>
+                    <div style="margin-top: 5px; color: var(--color-text);">${questionText}</div>
+                </div>
+                
+                <div style="background: var(--color-correct-answer); padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+                    <div style="font-weight: bold; color: var(--color-text-dark); margin-bottom: 5px;">CORRECT ANSWER:</div>
+                    <div style="color: var(--color-text-dark); font-weight: bold;">${correctOptionText}</div>
+                </div>
+                
+                <div style="background: var(--color-highlight); padding: 15px; border-radius: 6px;">
+                    <div class="field-header">EXPLANATION:</div>
+                    <div style="margin-top: 5px; color: var(--color-text);">${explanation}</div>
+                </div>
+            `;
+            
+            modal.style.display = 'block';
+        }
+        
+        function closeExplanation() {
+            const modal = document.getElementById('explanationModal');
+            modal.style.display = 'none';
+        }
+        
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const favModal = document.getElementById('favoritesModal');
+            const expModal = document.getElementById('explanationModal');
+            
+            if (event.target === favModal) {
+                closeFavorites();
+            }
+            if (event.target === expModal) {
+                closeExplanation();
+            }
+        }
+        
+        // Auto-refresh random words every 2 minutes
+        setInterval(loadRandomWords, 120000);
+    </script>
+</body>
+</html>
